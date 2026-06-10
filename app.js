@@ -181,6 +181,104 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Map physical key presses to virtual keycap animations
+  window.addEventListener('keydown', (e) => {
+    if (document.activeElement !== typewriterInput) return;
+    
+    let keyName = e.key.toLowerCase();
+    if (e.key === ' ') keyName = ' ';
+    
+    let keycap = null;
+    if (keyName === 'enter') {
+      keycap = document.querySelector('.keycap[data-key="enter"]');
+    } else if (keyName === 'backspace') {
+      keycap = document.querySelector('.keycap[data-key="backspace"]');
+    } else {
+      keycap = document.querySelector(`.keycap[data-key="${keyName}"]`);
+    }
+
+    if (keycap) {
+      keycap.classList.add('key-pressed');
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    let keyName = e.key.toLowerCase();
+    if (e.key === ' ') keyName = ' ';
+    
+    let keycap = null;
+    if (keyName === 'enter') {
+      keycap = document.querySelector('.keycap[data-key="enter"]');
+    } else if (keyName === 'backspace') {
+      keycap = document.querySelector('.keycap[data-key="backspace"]');
+    } else {
+      keycap = document.querySelector(`.keycap[data-key="${keyName}"]`);
+    }
+
+    if (keycap) {
+      keycap.classList.remove('key-pressed');
+    }
+  });
+
+  // Connect virtual keycap clicks to typing inputs
+  const keycaps = document.querySelectorAll('.keycap');
+  keycaps.forEach(keycap => {
+    keycap.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // prevent losing focus on main text area
+      audio.init();
+
+      const keyVal = keycap.getAttribute('data-key');
+      const currentLength = typewriterInput.value.length;
+
+      // Animate the key press
+      keycap.classList.add('key-pressed');
+
+      if (keyVal === 'backspace') {
+        audio.playBackspace();
+        if (currentLength > 0) {
+          typewriterInput.value = typewriterInput.value.slice(0, -1);
+          typewriterInput.dispatchEvent(new Event('input'));
+        }
+      } else if (keyVal === 'enter') {
+        if (currentLength > 0) {
+          submitThought();
+        }
+      } else if (keyVal === ' ') {
+        audio.playSpace();
+        if (currentLength < 280) {
+          typewriterInput.value += ' ';
+          typewriterInput.dispatchEvent(new Event('input'));
+        }
+      } else {
+        audio.playKey();
+        if (currentLength < 280) {
+          typewriterInput.value += keyVal;
+          typewriterInput.dispatchEvent(new Event('input'));
+          
+          if (Math.random() < 0.08) {
+            spawnInkSplatter();
+          }
+
+          const currentLineLen = getCursorLineLength();
+          if (currentLineLen === 68) {
+            audio.playBell();
+          }
+        }
+      }
+
+      // Keep focus in the input area
+      typewriterInput.focus();
+    });
+
+    keycap.addEventListener('mouseup', () => {
+      keycap.classList.remove('key-pressed');
+    });
+
+    keycap.addEventListener('mouseleave', () => {
+      keycap.classList.remove('key-pressed');
+    });
+  });
+
 
   // Handle character count reactive styling
   typewriterInput.addEventListener('input', () => {
