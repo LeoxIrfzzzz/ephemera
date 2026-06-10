@@ -4,23 +4,23 @@
  */
 
 :root {
-  /* Carbon Theme (Dark Mode: Mahogany Writing Desk & Forest Leather) */
-  --bg-color: #1a0f0a; /* Deep mahogany base */
-  --bg-texture: repeating-linear-gradient(90deg, rgba(255,255,255,0.003) 0px, rgba(255,255,255,0.003) 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px), radial-gradient(circle at center, #2e1c12 0%, #0f0704 100%);
-  --panel-bg: #1c271b; /* Rich dark hunter green leather overlay */
-  --panel-border: 1px solid #d4af37; /* Brass trim */
-  --text-color: #f5f2e9; /* Warm antique white */
-  --text-dim: #9b9584; /* Dusty parchment grey */
-  --accent-color: #d4af37; /* Polished Brass Gold */
-  --accent-rgb: 212, 175, 55;
-  --border-color: #3d3023; /* Antique wood seam */
-  --paper-bg: #fdfaf2; /* Linen cream sheet */
-  --paper-text: #1a1612; /* Charcoal carbon ink */
-  --paper-ink-dim: #6b6257; /* Fading iron-gall ink */
-  --platen-bg: #1f1d1b;
-  --knob-bg: radial-gradient(circle, #f3d99d 0%, #aa8439 60%, #5c4113 100%); /* Solid brass knobs */
-  --shadow-color: rgba(0, 0, 0, 0.65);
-  --glass-bg: rgba(28, 39, 27, 0.85);
+  /* Carbon Theme (Dark Mode: Espresso Wood & Creamy Coffee Beige) */
+  --bg-color: #0b0806; /* Almost black espresso wood */
+  --bg-texture: repeating-linear-gradient(90deg, rgba(255,255,255,0.002) 0px, rgba(255,255,255,0.002) 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px), radial-gradient(circle at center, #1c130d 0%, #050403 100%);
+  --panel-bg: #16100d; /* Roasted coffee bean leather */
+  --panel-border: 1px solid #c8b195; /* Coffee beige trim */
+  --text-color: #e6dec9; /* Crema beige text */
+  --text-dim: #948777; /* Medium coffee crema */
+  --accent-color: #c8b195; /* Coffee Beige */
+  --accent-rgb: 200, 177, 149;
+  --border-color: #2b1f18; /* Dark roast seam */
+  --paper-bg: #f7eedc; /* Latte cream paper sheet */
+  --paper-text: #231810; /* Dark espresso print ink */
+  --paper-ink-dim: #786554; /* Diluted coffee ink */
+  --platen-bg: #1a1310;
+  --knob-bg: radial-gradient(circle, #f0e6cf 0%, #a8947e 60%, #4b3e31 100%); /* Ivory & horn knobs */
+  --shadow-color: rgba(0, 0, 0, 0.85);
+  --glass-bg: rgba(22, 16, 13, 0.85);
   
   --header-font: 'Special Elite', monospace;
   --body-font: 'Courier Prime', Courier, monospace;
