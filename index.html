@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="carbon" data-crt="true">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ephemera: A social platform where nobody can like, comment, follow, or share. An anonymous typewriter stream where thoughts decay into silence after 24 hours. Expression without validation.">
+  <title>Ephemera — The Silent Network</title>
+  
+  <!-- Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Special+Elite&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Retro CRT Scanline Overlay -->
+  <div class="crt-overlay" id="crtOverlay"></div>
+  <div class="crt-flicker"></div>
+
+  <!-- Application Main Container -->
+  <div class="app-container">
+    
+    <!-- Header Block -->
+    <header class="app-header">
+      <h1 class="logo" id="appLogo">EPHEMERA</h1>
+      <p class="subtitle">Expression without validation. Anonymous thoughts that decay into ash in 24 hours.</p>
+      
+      <!-- Live Clock & Status Indicator -->
+      <div class="header-status">
+        <span class="pulse-indicator"></span>
+        <span class="status-text" id="statusClock">SYS.ACTIVE: 00:00:00</span>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-content">
+      
+      <!-- Section 1: The Typing Desk -->
+      <section class="typing-desk" aria-label="Typewriter Writing Desk">
+        <div class="typewriter-body">
+          <!-- The Platen (Paper Feed Roller) -->
+          <div class="platen-roller">
+            <div class="platen-side knob-left"></div>
+            <div class="platen-center"></div>
+            <div class="platen-side knob-right" id="platenKnob"></div>
+          </div>
+          
+          <!-- The Feed Paper Sheet -->
+          <div class="typewriter-paper" id="paperSheet">
+            <div class="paper-ribbon"></div>
+            <div class="paper-guideline">Write your thought. Cast it into the void. It will fade away.</div>
+            <textarea 
+              id="typewriterInput" 
+              maxlength="280" 
+              placeholder="Start typing..." 
+              autocomplete="off" 
+              autocorrect="off" 
+              autocapitalize="off" 
+              spellcheck="false"
+            ></textarea>
+            
+            <div class="typewriter-meta">
+              <span id="charCount">0 / 280</span>
+              <span class="scroll-instruction">Submit via Carriage Lever or Double-Enter</span>
+            </div>
+          </div>
+
+          <!-- Typewriter Mechanical Faceplate -->
+          <div class="typewriter-faceplate">
+            <!-- Carriage Return Lever -->
+            <button class="carriage-lever" id="carriageLever" aria-label="Send thought (Carriage return)">
+              <span class="lever-arm"></span>
+              <span class="lever-handle"></span>
+            </button>
+            <div class="key-rack-indicator">
+              <span>MECHANICAL BUFFER READY</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Atmosphere & Visual Control Panel -->
+      <section class="control-panel" aria-label="Settings and System Controls">
+        <div class="panel-section">
+          <h2>SYSTEM CONSOLE</h2>
+          <div class="control-grid">
+            <!-- Audio Toggles -->
+            <div class="control-group">
+              <label for="muteToggle">TYPE SOUND</label>
+              <button id="muteToggle" class="toggle-btn active">ON</button>
+            </div>
+            
+            <div class="control-group">
+              <label for="ambientToggle">AMBIENT RAIN</label>
+              <button id="ambientToggle" class="toggle-btn">OFF</button>
+            </div>
+
+            <!-- Volume Sliders -->
+            <div class="control-group slider-group">
+              <label for="volumeSlider">KEY VOLUME</label>
+              <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.4">
+            </div>
+
+            <div class="control-group slider-group">
+              <label for="ambientSlider">RAIN VOLUME</label>
+              <input type="range" id="ambientSlider" min="0" max="0.3" step="0.02" value="0.08" disabled>
+            </div>
+          </div>
+
+          <div class="control-grid secondary-controls">
+            <!-- CRT Scanline Filter -->
+            <div class="control-group">
+              <label for="crtToggle">CRT SCREEN</label>
+              <button id="crtToggle" class="toggle-btn active">ACTIVE</button>
+            </div>
+
+            <!-- Theme Toggle (Light / Dark Monochrome) -->
+            <div class="control-group">
+              <label for="themeToggle">AESTHETIC</label>
+              <button id="themeToggle" class="toggle-btn toggle-select">CARBON</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio Debug Mode (Time Warp) -->
+        <div class="panel-section time-warp-sandbox">
+          <div class="sandbox-title">
+            <h3>PORTFOLIO PLAYGROUND: DECAY SIMULATOR</h3>
+            <span class="badge">SANDBOX</span>
+          </div>
+          <p class="sandbox-desc">
+            Thoughts organic decay takes 24 hours. Drag the slider to warp time forward and observe how ink fades, blurs, and crumbles.
+          </p>
+          <div class="slider-warp-container">
+            <span class="warp-label text-left">Real Time (0h)</span>
+            <input type="range" id="timeWarpSlider" min="0" max="24" step="0.25" value="0">
+            <span class="warp-label text-right">Expired (24h)</span>
+          </div>
+          <div class="warp-status">
+            <span id="timeWarpLabel">Simulated Shift: +0.0 hours</span>
+            <button id="resetWarpBtn" class="action-btn">Reset Time</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: The Void Stream (Feed of Thoughts) -->
+      <section class="void-stream" aria-label="Stream of ephemeral thoughts">
+        <div class="stream-header">
+          <h2 class="section-title">THE DRIFTING INK</h2>
+          <div class="stream-stats">
+            <span id="activeThoughtsCount">0 active thoughts</span>
+          </div>
+        </div>
+
+        <!-- Feeds of post sheets -->
+        <div class="thought-feed" id="thoughtFeed">
+          <!-- Dynamic post cards are injected here -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <p class="empty-text">Nothing but silence remains. Roll paper in and write a thought to break it.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer Credit -->
+    <footer class="app-footer">
+      <p>EPHEMERA is an interactive portfolio project showcasing high-fidelity Web Audio API synthesizers and organic CSS decay algorithms. Zero external API calls, tracking, database storage, or validation mechanisms.</p>
+      <div class="footer-links">
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer">Source Code</a>
+        <span class="separator">•</span>
+        <a href="#" id="clearStorageLink">Clear Archive Memory</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Javascript Modules -->
+  <script src="audio.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
