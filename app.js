@@ -292,10 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Connect virtual keycap clicks to typing inputs
+  // Connect virtual keycap clicks & touch taps to typing inputs
   keycaps.forEach(keycap => {
-    keycap.addEventListener('mousedown', (e) => {
-      e.preventDefault(); // prevent losing focus on main text area
+    const handlePressStart = (e) => {
+      e.preventDefault(); // prevent double click firing on mobile
       audio.init();
 
       const keyVal = keycap.getAttribute('data-key');
@@ -357,19 +357,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Keep focus in the input area
       typewriterInput.focus();
-    });
+    };
 
-    keycap.addEventListener('mouseup', () => {
+    const handlePressEnd = () => {
       if (keycap.getAttribute('data-key') !== 'shift') {
         keycap.classList.remove('key-pressed');
       }
-    });
+    };
 
-    keycap.addEventListener('mouseleave', () => {
-      if (keycap.getAttribute('data-key') !== 'shift') {
-        keycap.classList.remove('key-pressed');
-      }
-    });
+    // Mouse bindings
+    keycap.addEventListener('mousedown', handlePressStart);
+    keycap.addEventListener('mouseup', handlePressEnd);
+    keycap.addEventListener('mouseleave', handlePressEnd);
+
+    // Touchscreen bindings
+    keycap.addEventListener('touchstart', handlePressStart, { passive: false });
+    keycap.addEventListener('touchend', handlePressEnd);
+    keycap.addEventListener('touchcancel', handlePressEnd);
   });
 
 
