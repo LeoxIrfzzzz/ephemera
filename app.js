@@ -40,6 +40,34 @@ document.addEventListener('DOMContentLoaded', () => {
   let isAmbientOn = false;
   let hasWarnedMargin = false; // flag to only play warning chime once per submission
   
+  // Spool rotation and Shift keyboard variables
+  let spoolRotation = 0;
+  let isShifted = false;
+  const leftSpoolInner = document.querySelector('.spool-left .spool-inner');
+  const rightSpoolInner = document.querySelector('.spool-right .spool-inner');
+
+  function rotateSpools() {
+    spoolRotation += 12;
+    if (leftSpoolInner) leftSpoolInner.style.transform = `rotate(${spoolRotation}deg)`;
+    if (rightSpoolInner) rightSpoolInner.style.transform = `rotate(${-spoolRotation}deg)`;
+  }
+
+  const shiftKeyMap = {
+    '!': '1', '@': '2', '#': '3', '$': '4', '%': '5',
+    '^': '6', '&': '7', '*': '8', '(': '9', ')': '0',
+    '_': '-', '+': '=',
+    ':': ';', '"': "'",
+    '<': ',', '>': '.', '?': '/'
+  };
+
+  const shiftCharMap = {
+    '1': '!', '2': '@', '3': '#', '4': '$', '5': '%',
+    '6': '^', '7': '&', '8': '*', '9': '(', '0': ')',
+    '-': '_', '=': '+',
+    ';': ':', "'": '"',
+    ',': '<', '.': '>', '/': '?'
+  };
+  
   // 1. Initialise clock display in header
   function updateSystemClock() {
     const d = new Date();
@@ -151,22 +179,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Limit characters
     const currentLength = typewriterInput.value.length;
 
-
     // Play sound based on keystroke
     if (e.key === 'Backspace') {
       audio.playBackspace();
+      rotateSpools();
     } else if (e.key === 'Spacebar' || e.key === ' ') {
       audio.playSpace();
+      rotateSpools();
     } else if (e.key === 'Enter') {
       // Create new line on Shift+Enter, or submit on normal Enter
       if (e.shiftKey) {
         audio.playCarriageReturn();
+        rotateSpools();
       } else if (currentLength > 0) {
         e.preventDefault();
         submitThought();
       }
     } else if (e.key.length === 1) {
       audio.playKey();
+      rotateSpools();
       
       // Random ink spray splatter (8% chance per key strike)
       if (Math.random() < 0.08) {
@@ -181,20 +212,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Map physical key presses to virtual keycap animations
+  // Select all keycaps at startup to avoid runtime selector queries
+  const keycaps = document.querySelectorAll('.keycap');
+
+  // Map physical key presses to virtual keycap animations & handle autofocus
   window.addEventListener('keydown', (e) => {
-    if (document.activeElement !== typewriterInput) return;
-    
+    // If typing in another UI control element, ignore focus redirection
+    if (document.activeElement && 
+        (document.activeElement.tagName === 'INPUT' && document.activeElement !== typewriterInput || 
+         document.activeElement.tagName === 'BUTTON' && !document.activeElement.classList.contains('keycap') || 
+         document.activeElement.tagName === 'A')) {
+      return;
+    }
+
+    audio.init();
+
+    // Auto-focus typewriter input if not focused
+    if (document.activeElement !== typewriterInput) {
+      typewriterInput.focus();
+      // Move cursor to the end of the text
+      const val = typewriterInput.value;
+      typewriterInput.value = '';
+      typewriterInput.value = val;
+    }
+
+    // Capture Shift key press
+    if (e.key === 'Shift') {
+      isShifted = true;
+      document.getElementById('typewriterKeyboard').classList.add('keyboard-shifted');
+      const shiftKeys = Array.from(keycaps).filter(el => el.getAttribute('data-key') === 'shift');
+      shiftKeys.forEach(el => el.classList.add('key-active'));
+      return;
+    }
+
     let keyName = e.key.toLowerCase();
     if (e.key === ' ') keyName = ' ';
     
+    const lookupKey = shiftKeyMap[e.key] || keyName;
+
     let keycap = null;
-    if (keyName === 'enter') {
-      keycap = document.querySelector('.keycap[data-key="enter"]');
-    } else if (keyName === 'backspace') {
-      keycap = document.querySelector('.keycap[data-key="backspace"]');
+    if (lookupKey === 'enter') {
+      keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === 'enter');
+    } else if (lookupKey === 'backspace') {
+      keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === 'backspace');
     } else {
-      keycap = document.querySelector(`.keycap[data-key="${keyName}"]`);
+      keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === lookupKey);
     }
 
     if (keycap) {
@@ -203,16 +265,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('keyup', (e) => {
+    if (e.key === 'Shift') {
+      isShifted = false;
+      document.getElementById('typewriterKeyboard').classList.remove('keyboard-shifted');
+      const shiftKeys = Array.from(keycaps).filter(el => el.getAttribute('data-key') === 'shift');
+      shiftKeys.forEach(el => el.classList.remove('key-active'));
+      return;
+    }
+
     let keyName = e.key.toLowerCase();
     if (e.key === ' ') keyName = ' ';
     
+    const lookupKey = shiftKeyMap[e.key] || keyName;
+
     let keycap = null;
-    if (keyName === 'enter') {
-      keycap = document.querySelector('.keycap[data-key="enter"]');
-    } else if (keyName === 'backspace') {
-      keycap = document.querySelector('.keycap[data-key="backspace"]');
+    if (lookupKey === 'enter') {
+      keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === 'enter');
+    } else if (lookupKey === 'backspace') {
+      keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === 'backspace');
     } else {
-      keycap = document.querySelector(`.keycap[data-key="${keyName}"]`);
+      keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === lookupKey);
     }
 
     if (keycap) {
@@ -221,7 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Connect virtual keycap clicks to typing inputs
-  const keycaps = document.querySelectorAll('.keycap');
   keycaps.forEach(keycap => {
     keycap.addEventListener('mousedown', (e) => {
       e.preventDefault(); // prevent losing focus on main text area
@@ -230,11 +301,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const keyVal = keycap.getAttribute('data-key');
       const currentLength = typewriterInput.value.length;
 
+      // Handle virtual Shift keys
+      if (keyVal === 'shift') {
+        isShifted = !isShifted;
+        document.getElementById('typewriterKeyboard').classList.toggle('keyboard-shifted', isShifted);
+        const shiftKeys = Array.from(keycaps).filter(el => el.getAttribute('data-key') === 'shift');
+        shiftKeys.forEach(el => el.classList.toggle('key-active', isShifted));
+        audio.playKey();
+        return;
+      }
+
       // Animate the key press
       keycap.classList.add('key-pressed');
 
       if (keyVal === 'backspace') {
         audio.playBackspace();
+        rotateSpools();
         if (currentLength > 0) {
           typewriterInput.value = typewriterInput.value.slice(0, -1);
           typewriterInput.dispatchEvent(new Event('input'));
@@ -245,14 +327,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else if (keyVal === ' ') {
         audio.playSpace();
+        rotateSpools();
         if (currentLength < 280) {
           typewriterInput.value += ' ';
           typewriterInput.dispatchEvent(new Event('input'));
         }
       } else {
         audio.playKey();
+        rotateSpools();
         if (currentLength < 280) {
-          typewriterInput.value += keyVal;
+          let charToType = keyVal;
+          if (isShifted) {
+            charToType = shiftCharMap[keyVal] || keyVal.toUpperCase();
+          }
+
+          typewriterInput.value += charToType;
           typewriterInput.dispatchEvent(new Event('input'));
           
           if (Math.random() < 0.08) {
@@ -271,11 +360,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     keycap.addEventListener('mouseup', () => {
-      keycap.classList.remove('key-pressed');
+      if (keycap.getAttribute('data-key') !== 'shift') {
+        keycap.classList.remove('key-pressed');
+      }
     });
 
     keycap.addEventListener('mouseleave', () => {
-      keycap.classList.remove('key-pressed');
+      if (keycap.getAttribute('data-key') !== 'shift') {
+        keycap.classList.remove('key-pressed');
+      }
     });
   });
 
@@ -602,6 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize App
   loadDatabase();
   renderFeed();
+  typewriterInput.focus();
 
   // Run a continuous render check every 5 seconds to decay in real-time
   setInterval(() => {
