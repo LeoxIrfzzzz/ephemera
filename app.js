@@ -150,13 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Limit characters
     const currentLength = typewriterInput.value.length;
-    
-    // Trigger paper physical strike jolt on typing keys
-    if (e.key === 'Backspace' || e.key === ' ' || e.key === 'Enter' || e.key.length === 1) {
-      paperSheet.classList.remove('paper-strike');
-      void paperSheet.offsetWidth; // force reflow
-      paperSheet.classList.add('paper-strike');
-    }
+
 
     // Play sound based on keystroke
     if (e.key === 'Backspace') {
