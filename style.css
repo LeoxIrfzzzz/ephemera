@@ -289,7 +289,8 @@ body {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 0 30px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+  transition: opacity 0.4s ease !important; /* Lock movement completely */
+  transform: none !important; /* Force static positioning to prevent dizziness */
   transform-origin: top center;
 }
 
@@ -831,6 +832,128 @@ textarea::placeholder {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Typewriter Mechanical Basket & Ribbon Spools Casing details */
+.typewriter-basket {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 80px;
+  background: linear-gradient(to bottom, #110d0b 0%, #1e1511 50%, #110d0b 100%);
+  border-top: 3px solid #000;
+  border-bottom: 2px solid #000;
+  position: relative;
+  padding: 0 1.5rem;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.8);
+  z-index: 3;
+}
+
+.typebar-basket-recess {
+  flex-grow: 1;
+  height: 100%;
+  margin: 0 1.5rem;
+  background: #090706;
+  border-radius: 40px 40px 0 0;
+  border: 2px solid #000;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 5px 15px rgba(0,0,0,0.9);
+}
+
+.typebar-arms {
+  display: flex;
+  justify-content: center;
+  width: 110%;
+  height: 100%;
+  position: absolute;
+  left: -5%;
+  bottom: -10px;
+}
+
+.typebar-arm {
+  flex-grow: 1;
+  width: 3px;
+  background: linear-gradient(to top, #2b231e, #888, #3b2f27);
+  margin: 0 3px;
+  height: 85%;
+  border-radius: 2px 2px 0 0;
+  box-shadow: 1px 0 2px rgba(0,0,0,0.5);
+  transform-origin: bottom center;
+}
+
+.typebar-arm:nth-child(1) { transform: rotate(-35deg); }
+.typebar-arm:nth-child(2) { transform: rotate(-25deg); }
+.typebar-arm:nth-child(3) { transform: rotate(-15deg); }
+.typebar-arm:nth-child(4) { transform: rotate(-5deg); }
+.typebar-arm:nth-child(5) { transform: rotate(5deg); }
+.typebar-arm:nth-child(6) { transform: rotate(15deg); }
+.typebar-arm:nth-child(7) { transform: rotate(25deg); }
+.typebar-arm:nth-child(8) { transform: rotate(35deg); }
+
+/* Ribbon Spools */
+.ribbon-spool {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #3d3023 20%, #15100c 70%, #050403 100%);
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.spool-inner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #000;
+  border: 1.5px solid var(--border-color);
+  box-shadow: inset 0 0 5px rgba(255,255,255,0.05);
+  position: relative;
+}
+
+.spool-inner::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background-color: var(--accent-color);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.spool-inner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 2px;
+  background-color: var(--accent-color);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* Brand Plate */
+.brand-plate {
+  background: linear-gradient(135deg, #f3eedf 0%, #a8947e 100%);
+  color: #120d0a;
+  font-family: var(--serif-font);
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+  padding: 2px 14px;
+  border: 2px solid #544434;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
+  text-shadow: 0.5px 0.5px 0px rgba(255,255,255,0.5);
+  border-radius: 2px;
+  text-align: center;
+  font-style: italic;
+  user-select: none;
+}
+
 
 /* Virtual Typewriter Keyboard Casing and Keycaps */
 .typewriter-keyboard {
