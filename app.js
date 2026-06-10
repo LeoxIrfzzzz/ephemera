@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Spool rotation and Shift keyboard variables
   let spoolRotation = 0;
   let isShifted = false;
+  const physicallyPressedKeys = new Set();
   const leftSpoolInner = document.querySelector('.spool-left .spool-inner');
   const rightSpoolInner = document.querySelector('.spool-right .spool-inner');
 
@@ -249,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === ' ') keyName = ' ';
     
     const lookupKey = shiftKeyMap[e.key] || keyName;
+    physicallyPressedKeys.add(lookupKey);
 
     let keycap = null;
     if (lookupKey === 'enter') {
@@ -277,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === ' ') keyName = ' ';
     
     const lookupKey = shiftKeyMap[e.key] || keyName;
+    physicallyPressedKeys.delete(lookupKey);
 
     let keycap = null;
     if (lookupKey === 'enter') {
@@ -377,8 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // Handle character count reactive styling
-  typewriterInput.addEventListener('input', () => {
+  // Handle character count reactive styling & mobile native virtual keyboard animations
+  typewriterInput.addEventListener('input', (e) => {
     const length = typewriterInput.value.length;
     charCount.innerText = `${length} / 280`;
     
@@ -390,6 +393,48 @@ document.addEventListener('DOMContentLoaded', () => {
       charCount.style.color = '#c0392b';
     } else {
       charCount.style.color = 'var(--paper-ink-dim)';
+    }
+
+    // Detect mobile virtual keyboard character changes to flash virtual keys
+    let keyToAnimate = null;
+
+    if (e.inputType === 'deleteContentBackward') {
+      keyToAnimate = 'backspace';
+    } else if (e.inputType === 'insertLineBreak') {
+      keyToAnimate = 'enter';
+    } else if (e.inputType === 'insertText' && e.data) {
+      const typedChar = e.data;
+      keyToAnimate = typedChar === ' ' ? ' ' : typedChar.toLowerCase();
+    } else if (!e.inputType) {
+      // Fallback check last character
+      const val = typewriterInput.value;
+      if (val.length > 0) {
+        const lastChar = val[val.length - 1];
+        keyToAnimate = lastChar === ' ' ? ' ' : lastChar.toLowerCase();
+      }
+    }
+
+    if (keyToAnimate) {
+      const lookupKey = shiftKeyMap[keyToAnimate] || keyToAnimate;
+      
+      let keycap = null;
+      if (lookupKey === 'enter') {
+        keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === 'enter');
+      } else if (lookupKey === 'backspace') {
+        keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === 'backspace');
+      } else {
+        keycap = Array.from(keycaps).find(el => el.getAttribute('data-key') === lookupKey);
+      }
+
+      // Flash the keycap briefly if not already physically held down (desktops)
+      if (keycap && !physicallyPressedKeys.has(lookupKey)) {
+        keycap.classList.add('key-pressed');
+        setTimeout(() => {
+          if (!physicallyPressedKeys.has(lookupKey)) {
+            keycap.classList.remove('key-pressed');
+          }
+        }, 120);
+      }
     }
   });
 
