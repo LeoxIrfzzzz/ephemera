@@ -819,24 +819,7 @@ textarea::placeholder {
   color: rgba(0, 0, 0, 0.2);
 }
 
-/* Screen overlay adjustments for responsive scaling */
-@media (max-width: 600px) {
-  .logo {
-    font-size: 2.5rem;
-  }
-  .app-container {
-    padding: 2rem 1rem;
-  }
-  .typewriter-paper {
-    padding: 1.75rem 1.75rem 1.25rem;
-  }
-  .thought-card {
-    padding: 1.75rem 1.75rem 2.25rem;
-  }
-  .control-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
+/* Screen overlay adjustments for responsive scaling relocated to bottom */
 
 /* Typewriter Mechanical Basket & Ribbon Spools Casing details */
 .typewriter-basket {
@@ -1087,9 +1070,65 @@ textarea::placeholder {
 }
 
 /* Responsive adjustment for keyboard */
+/* ==========================================================================
+   Responsive Design & Screen Compatibility System
+   ========================================================================== */
+
+/* 1. Tablets & Medium Laptops (max-width: 850px) */
+@media (max-width: 850px) {
+  .app-container {
+    max-width: 100%;
+    padding: 2rem 1.25rem;
+  }
+  .typewriter-body {
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+  .logo {
+    font-size: 2.8rem;
+  }
+}
+
+/* 2. Mobile Screens (max-width: 600px) */
 @media (max-width: 600px) {
+  .logo {
+    font-size: 2.3rem;
+    letter-spacing: 0.3rem;
+  }
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+  .app-container {
+    padding: 1.5rem 0.75rem;
+  }
+  .typewriter-body {
+    padding: 1.25rem 1rem 1rem;
+  }
+  .typewriter-paper {
+    padding: 1.75rem 1.5rem 1.25rem;
+    min-height: 200px;
+  }
+  .typewriter-paper textarea {
+    font-size: 1.2rem;
+  }
+  .thought-card {
+    padding: 1.75rem 1.5rem 2rem;
+  }
+  .thought-text {
+    font-size: 1.15rem;
+    margin-bottom: 1.25rem;
+  }
+  .control-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .panel-section {
+    padding: 1.25rem;
+  }
+
+  /* Keyboard scaling for mobile */
   .typewriter-keyboard {
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem;
     gap: 8px;
   }
   .keyboard-row {
@@ -1098,27 +1137,100 @@ textarea::placeholder {
   .keycap {
     width: 28px;
     height: 28px;
-    font-size: 0.8rem;
+    padding: 2px 0;
     box-shadow: 0 3px 0 #070504, 0 4px 4px rgba(0,0,0,0.5);
   }
   .keycap.key-pressed {
     transform: translateY(3px);
   }
-  .key-backspace {
-    width: 42px;
+  .keycap.key-active {
+    transform: translateY(2px);
   }
-  .key-space {
-    width: 140px;
-    font-size: 0.65rem;
+  .keycap .key-symbol {
+    font-size: 0.55rem;
   }
-  .key-return {
-    width: 65px;
-    font-size: 0.65rem;
+  .keycap .key-primary {
+    font-size: 0.75rem;
   }
-  .key-shift {
-    width: 45px;
-    font-size: 0.65rem;
+  
+  /* Special keycap scaling on mobile */
+  .key-backspace { width: 42px; }
+  .key-space { width: 140px; font-size: 0.65rem; }
+  .key-return { width: 65px; font-size: 0.65rem; }
+  .key-shift { width: 45px; font-size: 0.65rem; }
+}
+
+/* 3. Extra Small Screens (max-width: 440px) */
+@media (max-width: 440px) {
+  .logo {
+    font-size: 1.9rem;
+    letter-spacing: 0.2rem;
   }
+  .app-container {
+    padding: 1rem 0.5rem;
+  }
+  .typewriter-body {
+    padding: 1rem 0.5rem 0.75rem;
+  }
+  .typewriter-paper {
+    padding: 1.25rem 1rem 1rem;
+    min-height: 180px;
+  }
+  .typewriter-paper textarea {
+    font-size: 1.05rem;
+  }
+  .thought-card {
+    padding: 1.25rem 1rem 1.5rem;
+  }
+  .thought-text {
+    font-size: 1.05rem;
+  }
+  .control-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .slider-warp-container {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+  .warp-label {
+    text-align: center;
+  }
+
+  /* Micro keyboard adjustments to fit small screens perfectly */
+  .typewriter-keyboard {
+    padding: 0.5rem 0.25rem;
+    gap: 6px;
+  }
+  .keyboard-row {
+    gap: 3px;
+  }
+  .keycap {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    box-shadow: 0 2px 0 #070504, 0 3px 3px rgba(0,0,0,0.5);
+  }
+  .keycap.key-pressed {
+    transform: translateY(2px);
+  }
+  .keycap.key-active {
+    transform: translateY(1px);
+  }
+  /* Hide the stacked shifted symbol on micro screens for legibility */
+  .keycap .key-symbol {
+    display: none !important;
+  }
+  .keycap .key-primary {
+    font-size: 0.7rem;
+    line-height: 22px;
+  }
+  
+  .key-backspace { width: 32px; font-size: 0.6rem; }
+  .key-space { width: 95px; font-size: 0.55rem; }
+  .key-return { width: 48px; font-size: 0.55rem; }
+  .key-shift { width: 34px; font-size: 0.55rem; }
 }
 
 
