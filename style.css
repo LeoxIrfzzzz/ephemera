@@ -134,6 +134,8 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
+  z-index: 2; /* Layer above drifting canvas feathers */
 }
 
 /* Header */
@@ -326,11 +328,12 @@ body {
   resize: none;
   font-family: var(--body-font);
   font-size: 1.25rem;
+  font-weight: 700; /* Bolder bold typewriter ribbon ink */
   color: var(--paper-text);
   line-height: 1.7;
   width: 100%;
   letter-spacing: 0.03rem;
-  text-shadow: 0.5px 0.5px 0px rgba(0, 0, 0, 0.15);
+  text-shadow: 0.4px 0.4px 0px var(--paper-text), 0.1px 0.1px 1.5px rgba(0, 0, 0, 0.15); /* Ink bleed stamp effect */
 }
 
 .typewriter-meta {
@@ -704,14 +707,15 @@ body {
 
 .thought-text {
   font-family: var(--body-font);
-  font-size: 1.2rem;
+  font-size: 1.20rem;
+  font-weight: 700; /* Bolder ink weights for clarity */
   line-height: 1.7;
   white-space: pre-wrap;
   word-break: break-word;
   letter-spacing: 0.02em;
   margin-bottom: 1.75rem;
   color: var(--paper-text);
-  text-shadow: 0.5px 0.5px 0px rgba(0,0,0,0.05);
+  text-shadow: 0.4px 0.4px 0px var(--paper-text), 0.1px 0.1px 1px rgba(0,0,0,0.1);
   transition: opacity 0.5s ease, filter 0.5s ease, letter-spacing 0.5s ease;
 }
 
@@ -828,3 +832,29 @@ textarea::placeholder {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Flying Feathers Canvas Overlay */
+#featherCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1; /* Behind main app-container (z-index: 2) but in front of body background */
+  pointer-events: none; /* Crucial: clicks must pass through to elements */
+}
+
+/* Keystroke Paper Strike Jolt Animation */
+.paper-strike {
+  animation: paper-shake 0.06s ease-out;
+}
+
+@keyframes paper-shake {
+  0% { transform: translateY(-18px) translate(0, 0) rotate(0deg); }
+  20% { transform: translateY(-18px) translate(-1.5px, 0.5px) rotate(-0.08deg); }
+  40% { transform: translateY(-18px) translate(1.5px, -0.5px) rotate(0.08deg); }
+  60% { transform: translateY(-18px) translate(-0.8px, -0.2px) rotate(-0.04deg); }
+  80% { transform: translateY(-18px) translate(0.8px, 0.2px) rotate(0.04deg); }
+  100% { transform: translateY(-18px) translate(0, 0) rotate(0deg); }
+}
+

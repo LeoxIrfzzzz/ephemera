@@ -114,6 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Limit characters
     const currentLength = typewriterInput.value.length;
     
+    // Trigger paper physical strike jolt on typing keys
+    if (e.key === 'Backspace' || e.key === ' ' || e.key === 'Enter' || e.key.length === 1) {
+      paperSheet.classList.remove('paper-strike');
+      void paperSheet.offsetWidth; // force reflow
+      paperSheet.classList.add('paper-strike');
+    }
+
     // Play sound based on keystroke
     if (e.key === 'Backspace') {
       audio.playBackspace();
@@ -137,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
 
   // Handle character count reactive styling
   typewriterInput.addEventListener('input', () => {
@@ -416,4 +424,122 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     renderFeed();
   }, 5000);
+
+  // 8. Drifting Feathers Canvas Particle System
+  const canvas = document.getElementById('featherCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class FeatherParticle {
+    constructor(isInitial = false) {
+      this.reset(isInitial);
+    }
+
+    reset(isInitial = false) {
+      // Choose left side (first 18%) or right side (last 18%)
+      const isLeft = Math.random() < 0.5;
+      this.x = isLeft 
+        ? Math.random() * canvas.width * 0.18 
+        : canvas.width * 0.82 + Math.random() * canvas.width * 0.18;
+      
+      // If initial spawn, distribute across the screen height, otherwise spawn above screen
+      this.y = isInitial 
+        ? Math.random() * canvas.height 
+        : -50 - Math.random() * 150;
+      
+      this.size = 25 + Math.random() * 25;
+      this.speedY = 0.3 + Math.random() * 0.4;
+      this.phase = Math.random() * 100;
+      this.driftSpeed = 0.005 + Math.random() * 0.01;
+      this.driftWidth = 10 + Math.random() * 15;
+      this.angle = (Math.random() - 0.5) * 0.8;
+      this.rotSpeed = (Math.random() - 0.5) * 0.005;
+      this.opacity = 0.08 + Math.random() * 0.18;
+    }
+
+    update() {
+      this.y += this.speedY;
+      
+      // Sinusoidal horizontal waving motion
+      this.phase += this.driftSpeed;
+      this.x += Math.sin(this.phase) * 0.3;
+      
+      // Slowly rotate
+      this.angle += this.rotSpeed;
+
+      // Reset if it goes off screen
+      if (this.y > canvas.height + 50 || this.x < -50 || this.x > canvas.width + 50) {
+        this.reset(false);
+      }
+    }
+
+    draw() {
+      // Dynamic color check depending on monochrome theme
+      const isCarbon = document.documentElement.getAttribute('data-theme') !== 'parchment';
+      const color = isCarbon ? '234, 229, 216' : '125, 113, 98'; // Cream vs Sepia
+
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+      ctx.globalAlpha = this.opacity;
+      ctx.strokeStyle = `rgba(${color}, 1)`;
+      ctx.lineWidth = 1.0;
+
+      // Draw feather quill stem (rachis)
+      ctx.beginPath();
+      ctx.moveTo(0, -this.size / 2);
+      ctx.quadraticCurveTo(this.size * 0.07, 0, 0, this.size / 2);
+      ctx.stroke();
+
+      // Draw barbs (soft feathers vanes)
+      const barbs = 16;
+      for (let i = 0; i < barbs; i++) {
+        const t = i / barbs;
+        const py = -this.size / 2 + t * this.size;
+        const px = this.size * 0.05 * Math.sin(t * Math.PI);
+        const barbLen = this.size * 0.24 * Math.sin(t * Math.PI);
+
+        // Left barb
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.quadraticCurveTo(px - barbLen, py - this.size * 0.04, px - barbLen * 0.85, py - this.size * 0.09);
+        ctx.stroke();
+
+        // Right barb
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.quadraticCurveTo(px + barbLen, py - this.size * 0.04, px + barbLen * 0.85, py - this.size * 0.09);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // Spawn initial set of feathers
+  const particles = [];
+  const particleCount = 20;
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new FeatherParticle(true));
+  }
+
+  // Main animation loop
+  function animateFeathers() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    
+    requestAnimationFrame(animateFeathers);
+  }
+  
+  animateFeathers();
 });
+
