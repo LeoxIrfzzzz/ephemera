@@ -97,6 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Helper to get character length of the current line being typed
+  function getCursorLineLength() {
+    const text = typewriterInput.value;
+    const selectionEnd = typewriterInput.selectionEnd;
+    const textBeforeCursor = text.substring(0, selectionEnd);
+    const lines = textBeforeCursor.split('\n');
+    return lines[lines.length - 1].length;
+  }
+
   // 4. Typing keyboard audio integration
   typewriterInput.addEventListener('keydown', (e) => {
     // Check if audio needs to initialize on user interaction
@@ -111,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.key === 'Spacebar' || e.key === ' ') {
       audio.playSpace();
     } else if (e.key === 'Enter') {
-      // Submitting via double-enter
+      // Create new line on Shift+Enter, or submit on normal Enter
       if (e.shiftKey) {
-        audio.playKey();
+        audio.playCarriageReturn();
       } else if (currentLength > 0) {
         e.preventDefault();
         submitThought();
@@ -121,10 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.key.length === 1) {
       audio.playKey();
       
-      // Margin Warning Bell chime at 265 characters
-      if (currentLength >= 265 && !hasWarnedMargin) {
+      // Automatic mechanical typewriter bell warning at 68 characters on the line
+      const currentLineLen = getCursorLineLength();
+      if (currentLineLen === 68) {
         audio.playBell();
-        hasWarnedMargin = true;
       }
     }
   });
@@ -150,8 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const content = typewriterInput.value.trim();
     if (!content) return;
 
-    // Trigger submissions animations and audio
-    audio.playBell();
+    // Trigger submissions animations and carriage return audio
+    audio.playCarriageReturn();
     
     // Animate carriage lever and paper feed
     carriageLever.classList.add('lever-return');
@@ -163,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
       content: content,
       timestamp: Date.now()
     };
+
 
     // Add to beginning of thoughts feed
     posts.unshift(newPost);

@@ -199,6 +199,62 @@ class EphemeraAudio {
     });
   }
 
+  // Carriage Return zip & slide sound
+  playCarriageReturn() {
+    this.init();
+    if (this.isMuted || !this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    
+    // First, play the bell chime!
+    this.playBell();
+
+    // Synthesize a sequence of small mechanical ratchet clicks (accelerating ratchet)
+    const clicks = 8;
+    const clickDuration = 0.015;
+    const interval = 0.025; // 25ms between clicks
+
+    for (let i = 0; i < clicks; i++) {
+      const clickTime = now + 0.08 + (i * interval);
+      
+      const osc = this.ctx.createOscillator();
+      const gainNode = this.ctx.createGain();
+      
+      osc.type = 'triangle';
+      // Pitch sweeps slightly to mimic rapid gear clicks
+      osc.frequency.setValueAtTime(110 + (i * 15), clickTime);
+      osc.frequency.exponentialRampToValueAtTime(30, clickTime + clickDuration);
+      
+      gainNode.gain.setValueAtTime(0.08 * this.volume, clickTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, clickTime + clickDuration);
+      
+      osc.connect(gainNode);
+      gainNode.connect(this.ctx.destination);
+      
+      osc.start(clickTime);
+      osc.stop(clickTime + clickDuration * 1.5);
+    }
+    
+    // Play a final mechanical clunk/platen landing
+    const clunkTime = now + 0.08 + (clicks * interval) + 0.03;
+    const clunkOsc = this.ctx.createOscillator();
+    const clunkGain = this.ctx.createGain();
+    
+    clunkOsc.type = 'sine';
+    clunkOsc.frequency.setValueAtTime(90, clunkTime);
+    clunkOsc.frequency.exponentialRampToValueAtTime(30, clunkTime + 0.06);
+    
+    clunkGain.gain.setValueAtTime(0.15 * this.volume, clunkTime);
+    clunkGain.gain.exponentialRampToValueAtTime(0.001, clunkTime + 0.06);
+    
+    clunkOsc.connect(clunkGain);
+    clunkGain.connect(this.ctx.destination);
+    
+    clunkOsc.start(clunkTime);
+    clunkOsc.stop(clunkTime + 0.08);
+  }
+
+
   // Toggle ambient crackle / rain loop
   toggleAmbient(enable) {
     this.init();
