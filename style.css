@@ -327,7 +327,7 @@ body {
   outline: none;
   resize: none;
   font-family: var(--body-font);
-  font-size: 1.25rem;
+  font-size: 1.45rem;
   font-weight: 700; /* Bolder bold typewriter ribbon ink */
   color: var(--paper-text);
   line-height: 1.7;
@@ -712,7 +712,7 @@ body {
 
 .thought-text {
   font-family: var(--body-font);
-  font-size: 1.20rem;
+  font-size: 1.40rem;
   font-weight: 700; /* Bolder ink weights for clarity */
   line-height: 1.7;
   white-space: pre-wrap;
