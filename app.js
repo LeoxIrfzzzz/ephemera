@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Control Panel DOM
   const muteToggle = document.getElementById('muteToggle');
-  const ambientToggle = document.getElementById('ambientToggle');
+  const ambientSelect = document.getElementById('ambientSelect');
   const volumeSlider = document.getElementById('volumeSlider');
   const ambientSlider = document.getElementById('ambientSlider');
   const crtToggle = document.getElementById('crtToggle');
@@ -106,6 +106,43 @@ document.addEventListener('DOMContentLoaded', () => {
     return lines[lines.length - 1].length;
   }
 
+  // Spawn organic ink splatters on typing
+  function spawnInkSplatter() {
+    const isCarbon = document.documentElement.getAttribute('data-theme') !== 'parchment';
+    // Dark espresso ink vs dark sepia ink
+    const inkColor = isCarbon ? 'rgba(35, 24, 16, 0.75)' : 'rgba(97, 90, 82, 0.75)';
+
+    const ink = document.createElement('span');
+    ink.className = 'ink-splatter';
+    
+    // Random size between 1.5px and 4px
+    const size = 1.5 + Math.random() * 2.5;
+    
+    // Position randomly on the paper area (mostly around the typing area)
+    const x = 10 + Math.random() * 80; // percent
+    const y = 30 + Math.random() * 110; // px
+    
+    // Organic irregular blob shape using border-radius
+    const r1 = 40 + Math.random() * 30;
+    const r2 = 40 + Math.random() * 30;
+    const r3 = 40 + Math.random() * 30;
+    const r4 = 40 + Math.random() * 30;
+    
+    ink.style.left = `${x}%`;
+    ink.style.top = `${y}px`;
+    ink.style.width = `${size}px`;
+    ink.style.height = `${size}px`;
+    ink.style.backgroundColor = inkColor;
+    ink.style.borderRadius = `${r1}% ${100-r1}% ${r2}% ${100-r2}% / ${r3}% ${r4}% ${100-r3}% ${100-r4}%`;
+    
+    paperSheet.appendChild(ink);
+    
+    // Clean up from DOM after fade animation is finished
+    setTimeout(() => {
+      ink.remove();
+    }, 7000);
+  }
+
   // 4. Typing keyboard audio integration
   typewriterInput.addEventListener('keydown', (e) => {
     // Check if audio needs to initialize on user interaction
@@ -136,6 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (e.key.length === 1) {
       audio.playKey();
+      
+      // Random ink spray splatter (8% chance per key strike)
+      if (Math.random() < 0.08) {
+        spawnInkSplatter();
+      }
       
       // Automatic mechanical typewriter bell warning at 68 characters on the line
       const currentLineLen = getCursorLineLength();
@@ -224,11 +266,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const simulatedNow = Date.now() + timeWarpMs;
     
-    // Filter active posts (survived under 24 hours of simulated time)
+    // Load resonated states
+    const resonatedMap = JSON.parse(localStorage.getItem('ephemera_resonated') || '{}');
+    
+    // Filter active posts (survived under 24 hours of simulated time, accounting for resonance)
     const activePosts = posts.filter(post => {
-      const ageMs = simulatedNow - post.timestamp;
+      const resonanceOffset = resonatedMap[post.id] ? (3 * 60 * 60 * 1000) : 0;
+      const ageMs = simulatedNow - post.timestamp - resonanceOffset;
       const ageHours = ageMs / (1000 * 60 * 60);
-      return ageHours < 24 && ageHours >= 0; // Filter expired or future posts (warp reset safety)
+      return ageHours < 24 && ageHours >= 0; // Filter expired or future posts
     });
 
     // Handle empty feed states
@@ -242,22 +288,18 @@ document.addEventListener('DOMContentLoaded', () => {
     emptyState.style.display = 'none';
     activeThoughtsCount.innerText = `${activePosts.length} active thought${activePosts.length === 1 ? '' : 's'}`;
 
-    // Get current render list IDs to update efficiently or rebuild
+    // Clear feed container
     thoughtFeed.innerHTML = '';
     
     activePosts.forEach(post => {
-      const ageMs = simulatedNow - post.timestamp;
+      const resonanceOffset = resonatedMap[post.id] ? (3 * 60 * 60 * 1000) : 0;
+      const ageMs = simulatedNow - post.timestamp - resonanceOffset;
       const ageHours = ageMs / (1000 * 60 * 60);
       const remainingFraction = Math.max(0, 1 - (ageHours / 24));
       
       // Compute styles based on decay fraction
-      // Opacity: fades from 1.0 down to 0.05
       const opacity = (remainingFraction * 0.92) + 0.08;
-      
-      // Blur: starts at 0px, reaches 2.5px when almost dead
       const blur = (1 - remainingFraction) * 2.2;
-      
-      // Font spacing spreads out as text decomposes
       const letterSpacing = (1 - remainingFraction) * 0.06;
       
       // Create card elements
@@ -292,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const timeSpan = document.createElement('span');
       timeSpan.innerText = timeText;
-      timeSpan.style.opacity = (remainingFraction * 0.6) + 0.4; // meta text also fades
+      timeSpan.style.opacity = (remainingFraction * 0.6) + 0.4;
       
       // Visual indicator bar
       const barContainer = document.createElement('div');
@@ -302,12 +344,44 @@ document.addEventListener('DOMContentLoaded', () => {
       bar.className = 'decay-bar';
       bar.style.width = `${(remainingFraction * 100).toFixed(1)}%`;
       
-      // Crimson color trigger for posts dying soon (under 4 hours)
       if (remainingFraction < 0.166) {
         bar.classList.add('decay-urgent');
       }
       
       barContainer.appendChild(bar);
+
+      // Resonate Button (Breathe Life)
+      const hasResonated = resonatedMap[post.id];
+      const resonateBtn = document.createElement('button');
+      resonateBtn.className = 'resonate-btn';
+      resonateBtn.innerText = hasResonated ? '[resonated]' : '[resonate]';
+      if (hasResonated) resonateBtn.disabled = true;
+      resonateBtn.setAttribute('data-id', post.id);
+      
+      resonateBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const pId = e.target.getAttribute('data-id');
+        
+        // Play crystal chime sound
+        audio.playResonance();
+        
+        // Add ripple animation to card
+        const targetCard = document.getElementById(pId);
+        if (targetCard) {
+          targetCard.classList.add('resonate-ripple');
+        }
+        
+        // Store resonated ID
+        resonatedMap[pId] = true;
+        localStorage.setItem('ephemera_resonated', JSON.stringify(resonatedMap));
+        
+        // Refresh feed after swell animation finishes
+        setTimeout(() => {
+          renderFeed();
+        }, 1000);
+      });
+      
+      metaEl.appendChild(resonateBtn);
       metaEl.appendChild(timeSpan);
       metaEl.appendChild(barContainer);
       
@@ -333,20 +407,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Ambient Rain Sound Toggle
-  ambientToggle.addEventListener('click', () => {
+  // Ambient Sound Cycling Selector
+  let ambientChannel = 'off'; // 'off', 'rain', 'hearth', 'wind'
+  
+  ambientSelect.addEventListener('click', () => {
     audio.init();
-    isAmbientOn = !isAmbientOn;
-    audio.toggleAmbient(isAmbientOn);
     
-    if (isAmbientOn) {
-      ambientToggle.classList.add('active');
-      ambientToggle.innerText = 'ON';
+    if (ambientChannel === 'off') {
+      ambientChannel = 'rain';
+      ambientSelect.innerText = 'RAIN';
+      ambientSelect.classList.add('active');
       ambientSlider.disabled = false;
+      audio.toggleAmbient(true, 'rain');
+    } else if (ambientChannel === 'rain') {
+      ambientChannel = 'hearth';
+      ambientSelect.innerText = 'HEARTH';
+      ambientSelect.classList.add('active');
+      ambientSlider.disabled = false;
+      audio.toggleAmbient(true, 'hearth');
+    } else if (ambientChannel === 'hearth') {
+      ambientChannel = 'wind';
+      ambientSelect.innerText = 'WIND';
+      ambientSelect.classList.add('active');
+      ambientSlider.disabled = false;
+      audio.toggleAmbient(true, 'wind');
     } else {
-      ambientToggle.classList.remove('active');
-      ambientToggle.innerText = 'OFF';
+      ambientChannel = 'off';
+      ambientSelect.innerText = 'OFF';
+      ambientSelect.classList.remove('active');
       ambientSlider.disabled = true;
+      audio.toggleAmbient(false);
     }
   });
 
@@ -406,6 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (confirm("Are you sure you want to clear your local memory? This will restore initial seed thoughts.")) {
       localStorage.removeItem('ephemera_thoughts');
+      localStorage.removeItem('ephemera_resonated');
       posts = [...seedPosts];
       saveDatabase();
       timeWarpSlider.value = 0;

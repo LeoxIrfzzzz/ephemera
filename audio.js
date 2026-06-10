@@ -255,35 +255,73 @@ class EphemeraAudio {
   }
 
 
-  // Toggle ambient crackle / rain loop
-  toggleAmbient(enable) {
+  // Play crystal glass resonance chime (Breathe Life)
+  playResonance() {
+    this.init();
+    if (this.isMuted || !this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    
+    // High crystal chime (perfect fifth dyad)
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+    
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(880, now); // A5
+    
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1320, now); // E6 (harmonic Fifth)
+    
+    gainNode.gain.setValueAtTime(0.18 * this.volume, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 1.8); // 1.8s decay
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+    
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 1.9);
+    osc2.stop(now + 1.9);
+  }
+
+  // Toggle ambient crackle / rain / wind loops
+  toggleAmbient(enable, mode = 'rain') {
     this.init();
     if (!this.ctx) return;
 
-    if (!enable) {
-      if (this.ambientNode) {
-        try {
-          this.ambientNode.stop();
-        } catch (e) {}
-        this.ambientNode = null;
-      }
-      return;
+    // Stop current ambient sound if running
+    if (this.ambientNode) {
+      try {
+        this.ambientNode.stop();
+      } catch (e) {}
+      this.ambientNode = null;
     }
 
-    if (this.ambientNode) return; // already playing
+    if (!enable) return;
 
     const sampleRate = this.ctx.sampleRate;
-    const duration = 2.0; // 2 seconds of noise buffer
+    const duration = 3.0; // 3 seconds loop buffer
     const bufferSize = sampleRate * duration;
     const buffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
     const data = buffer.getChannelData(0);
 
-    // Pink noise filtering variables
+    // Filter variables
     let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     
+    // Crackle threshold depending on mode
+    let crackleProb = 0.0004; // default Rain
+    if (mode === 'hearth') {
+      crackleProb = 0.0018; // More crackling wood pops
+    } else if (mode === 'wind') {
+      crackleProb = 0.00005; // Almost no crackle
+    }
+
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
-      // Pink filter equation approximation
+      
+      // Pink noise filter approximation
       b0 = 0.99886 * b0 + white * 0.0555179;
       b1 = 0.99332 * b1 + white * 0.0750759;
       b2 = 0.96900 * b2 + white * 0.1538520;
@@ -291,12 +329,14 @@ class EphemeraAudio {
       b4 = 0.55000 * b4 + white * 0.5329522;
       b5 = -0.7616 * b5 - white * 0.0168980;
       data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-      data[i] *= 0.12; // normalise volume
+      data[i] *= 0.1; // normalize
       b6 = white * 0.115926;
 
-      // Inject sparse static pops (vintage record crackle)
-      if (Math.random() < 0.0004) {
-        data[i] += (Math.random() > 0.5 ? 0.35 : -0.35);
+      // Crackle generator (hearth pops vs rain dust)
+      if (Math.random() < crackleProb) {
+        // Hearth has sharper, warmer snaps
+        const snapScale = mode === 'hearth' ? (Math.random() > 0.4 ? 0.45 : -0.45) : 0.3;
+        data[i] += snapScale;
       }
     }
 
@@ -304,13 +344,35 @@ class EphemeraAudio {
     noiseSource.buffer = buffer;
     noiseSource.loop = true;
 
-    // Soft lowpass filter to make it cozy and back-grounded
+    // Filter setup
     const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(750, this.ctx.currentTime);
-
     this.ambientGain = this.ctx.createGain();
     this.ambientGain.gain.setValueAtTime(this.ambientVolume, this.ctx.currentTime);
+
+    if (mode === 'wind') {
+      // Wind has a whistle: bandpass filter
+      filter.type = 'bandpass';
+      filter.Q.setValueAtTime(2.5, this.ctx.currentTime);
+      filter.frequency.setValueAtTime(320, this.ctx.currentTime);
+      
+      // Automate a low-frequency sweep to simulate wind gusts
+      const now = this.ctx.currentTime;
+      let timeOffset = 0;
+      while (timeOffset < duration) {
+        const sweepFreq = 220 + Math.random() * 400; // Whistle frequency
+        const sweepDuration = 0.5 + Math.random() * 1.0;
+        filter.frequency.exponentialRampToValueAtTime(sweepFreq, now + timeOffset + sweepDuration);
+        timeOffset += sweepDuration;
+      }
+    } else if (mode === 'hearth') {
+      // Hearth is warm: low cutoff lowpass filter
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(350, this.ctx.currentTime);
+    } else {
+      // Rain is standard lowpass filter
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(700, this.ctx.currentTime);
+    }
 
     noiseSource.connect(filter);
     filter.connect(this.ambientGain);
@@ -335,3 +397,4 @@ class EphemeraAudio {
 
 // Export sound engine globally for application script access
 window.EphemeraAudio = EphemeraAudio;
+
